@@ -22,13 +22,17 @@ class LED():
     def __init__(self, name, pin, color_obj, color = 'BLACK'):
         self.name = name
         self.color_obj = color_obj
+        self.last_color = color
         self.color = color
         self.pin = pin
         GPIO.setup(self.pin, GPIO.OUT)
         GPIO.output(self.pin, GPIO.LOW)
 
     def activate(self, blink = False, delay = 0):
-        self.color_obj.setColor(self.color)
+        if not (self.last_color is self.color):
+            print "LED:" + self.name + "change to COLOR:" + self.color
+            self.last_color = self.color
+            self.color_obj.setColor(self.color)
         GPIO.output(self.pin, True)
 
     def deactivate(self):
@@ -89,28 +93,31 @@ class Color():
 def main():
     GPIO.setmode(GPIO.BCM)
     color = Color(pin_mapper['red'], pin_mapper['green'], pin_mapper['blue'])
-    led_one = LED('led_one', pin_mapper['led_one'], color)
-    led_array = [led_one,]
-    t = threading.Thread(target=threadLEDs, args = (led_array, 0.05))
+    led_one   = LED('led_one', pin_mapper['led_one'], color)
+    led_two   = LED('led_two', pin_mapper['led_two'], color)
+    led_three = LED('led_three', pin_mapper['led_three'], color)
+    led_array = [led_one, led_two, led_three]
+    t = threading.Thread(target=threadLEDs, args = (led_array, 0.001))
     t.setDaemon(True)
     t.start()
-    print "after thread"
 
     while True:
         led_one.color = Color.BLUE
-        print ("Changed LED:" + led_one.name + " to COLOR:" + led_one.color)
-        time.sleep(1)
-        led_one.color = Color.RED
-        print ("Changed LED:" + led_one.name + " to COLOR:" + led_one.color)
-        time.sleep(1)
+        led_two.color = Color.GREEN
+        led_three.color = Color.RED
+        time.sleep(5)
+        led_one.color = Color.WHITE
+        led_two.color = Color.RED
+        led_three.color = Color.WHITE
+        time.sleep(5)
 
-def threadLEDs(led_array, cycle_time):
+def threadLEDs(led_array, timeon):
     while True:
         for led in led_array:
-            print ("LED:" + led.name + " activating COLOR:" + led.color)
+            #print ("LED:" + led.name + " activating COLOR:" + led.color)
             led.activate()
-            time.sleep(cycle_time)
-            print ("LED:" + led.name + " deactivating COLOR:" + led.color)
+            time.sleep(timeon)
+            #print ("LED:" + led.name + " deactivating COLOR:" + led.color)
             led.deactivate()
 
 main()
