@@ -63,10 +63,9 @@ class Color():
             GPIO.output(color_pin, GPIO.LOW)
 
     def setColor(self, color):
-        #@TODO for loop
-        GPIO.output(self.color_pins[0], self.colors[color][0])
-        GPIO.output(self.color_pins[1], self.colors[color][1])
-        GPIO.output(self.color_pins[2], self.colors[color][2])
+        for i in xrange(len(self.color_pins)):
+            #print ("setting pin:" + str(self.color_pins[i]) + " to pin:" + str(self.colors[color][i]))
+            GPIO.output(self.color_pins[i], self.colors[color][i])
 
     #RGB
     colors = {
@@ -91,11 +90,18 @@ class Color():
     WHITE   = 'WHITE'
 
 def main():
+    #Set board pin mode
     GPIO.setmode(GPIO.BCM)
+
+    #Set RGB pins for RGB LEDs
     color = Color(pin_mapper['red'], pin_mapper['green'], pin_mapper['blue'])
+
+    #Init our RGB LEDs
     led_one   = LED('led_one', pin_mapper['led_one'], color)
     led_two   = LED('led_two', pin_mapper['led_two'], color)
     led_three = LED('led_three', pin_mapper['led_three'], color)
+
+    #Group and pass the LEDs to our lighting thread
     led_array = [led_one, led_two, led_three]
     t = threading.Thread(target=threadLEDs, args = (led_array, 0.001))
     t.setDaemon(True)
@@ -105,18 +111,18 @@ def main():
         led_one.color = Color.BLUE
         led_two.color = Color.GREEN
         led_three.color = Color.RED
-        time.sleep(5)
+        time.sleep(10)
         led_one.color = Color.WHITE
         led_two.color = Color.RED
         led_three.color = Color.WHITE
-        time.sleep(5)
+        time.sleep(10)
 
-def threadLEDs(led_array, timeon):
+def threadLEDs(led_array, time_on):
     while True:
         for led in led_array:
             #print ("LED:" + led.name + " activating COLOR:" + led.color)
             led.activate()
-            time.sleep(timeon)
+            time.sleep(time_on)
             #print ("LED:" + led.name + " deactivating COLOR:" + led.color)
             led.deactivate()
 
