@@ -1,6 +1,8 @@
 __author__ = 'dan'
 import RPi.GPIO as GPIO
 import time
+import threading
+
 
 pin_mapper = {
     'switch_one'   : 18,
@@ -17,13 +19,16 @@ pin_mapper = {
 
 class LED():
 
-    def __init__(self, pin, color_obj):
+    def __init__(self, name, pin, color_obj, color = 'BLACK'):
+        self.name = name
         self.color_obj = color_obj
+        self.color = color
         self.pin = pin
         GPIO.setup(self.pin, GPIO.OUT)
         GPIO.output(self.pin, GPIO.LOW)
 
     def activate(self, blink = False, delay = 0):
+        self.color_obj.setColor(self.color)
         GPIO.output(self.pin, True)
 
     def deactivate(self):
@@ -61,6 +66,7 @@ class Color():
 
     #RGB
     colors = {
+        'BLACK'   : [ 0, 0, 0 ],
         'BLUE'    : [ 0, 0, 1 ],
         'GREEN'   : [ 0, 1, 0 ],
         'CYAN'    : [ 0, 1, 1 ],
@@ -71,6 +77,7 @@ class Color():
     }
 
     #Lookup vars
+    BLACK   = 'BLACK'
     BLUE    = 'BLUE'
     GREEN   = 'GREEN'
     CYAN    = 'CYAN'
@@ -82,13 +89,28 @@ class Color():
 def main():
     GPIO.setmode(GPIO.BCM)
     color = Color(pin_mapper['red'], pin_mapper['green'], pin_mapper['blue'])
+    led_one = LED('led_one', pin_mapper['led_one'], color)
+    led_array = [led_one,]
+    t = threading.Thread(target=threadLEDs, args = (led_array, 0.05))
+    t.setDaemon(True)
+    t.start()
+    print "after thread"
 
     while True:
-        color.setColor(Color.BLUE)
-        led_one = LED(pin_mapper['led_one'], color)
-        led_one.activate()
+        led_one.color = Color.BLUE
+        print ("Changed LED:" + led_one.name + " to COLOR:" + led_one.color)
         time.sleep(1)
-        color.setColor(Color.RED)
+        led_one.color = Color.RED
+        print ("Changed LED:" + led_one.name + " to COLOR:" + led_one.color)
         time.sleep(1)
+
+def threadLEDs(led_array, cycle_time):
+    while True:
+        for led in led_array:
+            print ("LED:" + led.name + " activating COLOR:" + led.color)
+            led.activate()
+            time.sleep(cycle_time)
+            print ("LED:" + led.name + " deactivating COLOR:" + led.color)
+            led.deactivate()
 
 main()
