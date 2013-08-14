@@ -22,22 +22,39 @@ class LED():
     def __init__(self, name, pin, color_obj, color = 'BLACK'):
         self.name = name
         self.color_obj = color_obj
-        self.last_color = color
+        self.isactivated = None
         self.color = color
         self.pin = pin
+        self.blink = False
+        self.delay = 0
         GPIO.setup(self.pin, GPIO.OUT)
         GPIO.output(self.pin, GPIO.LOW)
 
+    #For calling to 'activate' (ie turn on) led in other thread from main thread
     def activate(self, blink = False, delay = 0):
-        if not (self.last_color is self.color):
-            print "LED:" + self.name + "change to COLOR:" + self.color
-            self.last_color = self.color
+        self.blink = blink
+        self.delay = delay
+        self.isactivated = True
+
+    #For calling to 'activate' (ie turn on) led in other thread from main thread
+    def deactivate(self, blink = False, delay = 0):
+        self.blink = None
+        self.delay = 0
+        self.isactivated = False
+
+    #For calling from thread
+    def _activate(self):
+        if self.isactivated == True:
             self.color_obj.setColor(self.color)
-        GPIO.output(self.pin, True)
-
-    def deactivate(self):
-        GPIO.output(self.pin, False)
-
+            GPIO.output(self.pin, True)
+        else: pass
+    #For calling from thread
+    def _deactivate(self):
+        if self.isactivated == False:
+            #Give the RGB a moment to dim
+            self.color_obj.setColor('BLACK')
+            GPIO.output(self.pin, False)
+        else: pass
 
 class Switch():
     def __init__(self, pin):
@@ -121,9 +138,9 @@ def threadLEDs(led_array, time_on):
     while True:
         for led in led_array:
             #print ("LED:" + led.name + " activating COLOR:" + led.color)
-            led.activate()
+            led._activate()
             time.sleep(time_on)
             #print ("LED:" + led.name + " deactivating COLOR:" + led.color)
-            led.deactivate()
+            led._deactivate()
 
 main()
