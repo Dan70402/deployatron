@@ -51,14 +51,16 @@ class LED():
                     if self._oncount == self.delay:
                         self._oncount = 0
                         self._countstate = 'off'
+                        self.color_obj.setColor(self.color)
                 elif self._countstate == 'off':
                     self._offcount = self._offcount + 1
                     if self._offcount == self.delay:
                         self._offcount = 0
                         self._countstate = 'on'
-                    return
+                        self.color_obj.setColor('BLACK')
+            else:
+                self.color_obj.setColor(self.color)
 
-            self.color_obj.setColor(self.color)
             GPIO.output(self.pin, True)
         else: pass
     #For calling from thread
