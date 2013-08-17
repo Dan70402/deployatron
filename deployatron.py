@@ -141,14 +141,14 @@ def main():
 
 
     while True:
-    if sw_one.isActivated():
+        if sw_one.isActivated():
             led_one.color = Color.BLUE
             led_one.blink = True
             led_one.delay = 75
 
             led_two.color = Color.GREEN
             time.sleep(0.10)
-    else:
+        else:
             led_one.color = Color.RED
             led_one.blink = False
             led_two.color = Color.BLUE
