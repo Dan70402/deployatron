@@ -11,7 +11,7 @@ pin_mapper = {
     'button_one'   : 15,
     'led_one'      : 14,
     'led_two'      : 8,
-    'led_three'    : 7,
+    'led_three'    : 11,
     'red'          : 2,
     'green'        : 3,
     'blue'         : 4
@@ -45,29 +45,29 @@ class LED():
     #For calling from thread
     def _activate(self):
         if self.isactivated == True:
-            self.color_obj.setColor(self.color)
+	    self.color_obj.setColor(self.color)
             GPIO.output(self.pin, True)
         else: pass
     #For calling from thread
     def _deactivate(self):
-        if self.isactivated == False:
-            #Give the RGB a moment to dim
-            self.color_obj.setColor('BLACK')
-            GPIO.output(self.pin, False)
-        else: pass
+        #Give the RGB a moment to dim
+        self.color_obj.setColor('BLACK')
+        GPIO.output(self.pin, False)
 
 class Switch():
     def __init__(self, pin):
-        GPIO.setup(pin, GPIO.IN)
+        self.pin = pin
+        GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     def isActivated(self):
-        pass
+        isactive = GPIO.input(self.pin)
+        return isactive
 
     pass
 
 class Button():
     def __init__(self, pin):
-        GPIO.setup(pin, GPIO.IN)
+        GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     def onPress(self):
         pass
@@ -81,7 +81,6 @@ class Color():
 
     def setColor(self, color):
         for i in xrange(len(self.color_pins)):
-            #print ("setting pin:" + str(self.color_pins[i]) + " to pin:" + str(self.colors[color][i]))
             GPIO.output(self.color_pins[i], self.colors[color][i])
 
     #RGB
@@ -116,31 +115,36 @@ def main():
     #Init our RGB LEDs
     led_one   = LED('led_one', pin_mapper['led_one'], color)
     led_two   = LED('led_two', pin_mapper['led_two'], color)
-    led_three = LED('led_three', pin_mapper['led_three'], color)
+    sw_one    = Switch(18)
 
     #Group and pass the LEDs to our lighting thread
-    led_array = [led_one, led_two, led_three]
+    led_array = [led_one, led_two]
     t = threading.Thread(target=threadLEDs, args = (led_array, 0.001))
     t.setDaemon(True)
     t.start()
 
+    led_one.activate()
+    led_two.activate()
+
+
     while True:
-        led_one.color = Color.BLUE
-        led_two.color = Color.GREEN
-        led_three.color = Color.RED
-        time.sleep(10)
-        led_one.color = Color.WHITE
-        led_two.color = Color.RED
-        led_three.color = Color.WHITE
-        time.sleep(10)
+	if sw_one.isActivated():
+            led_one.color = Color.BLUE
+            led_two.color = Color.GREEN
+            time.sleep(0.10)
+	else:
+            led_one.color = Color.RED
+            led_two.color = Color.BLUE
+            time.sleep(0.10)
 
 def threadLEDs(led_array, time_on):
     while True:
         for led in led_array:
-            #print ("LED:" + led.name + " activating COLOR:" + led.color)
             led._activate()
             time.sleep(time_on)
-            #print ("LED:" + led.name + " deactivating COLOR:" + led.color)
             led._deactivate()
 
-main()
+try:
+    main()
+finally:
+    GPIO.cleanup()
