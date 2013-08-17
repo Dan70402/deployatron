@@ -51,16 +51,14 @@ class LED():
                     if self._oncount == self.delay:
                         self._oncount = 0
                         self._countstate = 'off'
-                        self.color_obj.setColor(self.color)
                 elif self._countstate == 'off':
                     self._offcount = self._offcount + 1
                     if self._offcount == self.delay:
                         self._offcount = 0
                         self._countstate = 'on'
-                        self.color_obj.setColor('BLACK')
-            else:
-                self.color_obj.setColor(self.color)
+                    return
 
+            self.color_obj.setColor(self.color)
             GPIO.output(self.pin, True)
         else: pass
     #For calling from thread
@@ -134,7 +132,7 @@ def main():
 
     #Group and pass the LEDs to our lighting thread
     led_array = [led_one, led_two]
-    t = threading.Thread(target=threadLEDs, args = (led_array, 0.001))
+    t = threading.Thread(target=threadLEDs, args = (led_array, 0.01))
     t.setDaemon(True)
     t.start()
 
