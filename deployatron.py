@@ -35,14 +35,10 @@ class LED():
 
     #For calling to 'activate' (ie turn on) led in other thread from main thread
     def activate(self, blink = False, delay = 0):
-        self.blink = blink
-        self.delay = delay
         self.isactivated = True
 
     #For calling to 'activate' (ie turn on) led in other thread from main thread
     def deactivate(self, blink = False, delay = 0):
-        self.blink = None
-        self.delay = 0
         self.isactivated = False
 
     #For calling from thread
@@ -60,9 +56,9 @@ class LED():
                     if self._offcount == self.delay:
                         self._offcount = 0
                         self._countstate = 'on'
-                    pass
+                    return
 
-	        self.color_obj.setColor(self.color)
+            self.color_obj.setColor(self.color)
             GPIO.output(self.pin, True)
         else: pass
     #For calling from thread
@@ -131,8 +127,6 @@ def main():
 
     #Init our RGB LEDs
     led_one   = LED('led_one', pin_mapper['led_one'], color)
-    led_one.blink = True
-    led_one.delay = 50
     led_two   = LED('led_two', pin_mapper['led_two'], color)
     sw_one    = Switch(18)
 
@@ -147,12 +141,16 @@ def main():
 
 
     while True:
-	if sw_one.isActivated():
+    if sw_one.isActivated():
             led_one.color = Color.BLUE
+            led_one.blink = True
+            led_one.delay = 75
+
             led_two.color = Color.GREEN
             time.sleep(0.10)
-	else:
+    else:
             led_one.color = Color.RED
+            led_one.blink = False
             led_two.color = Color.BLUE
             time.sleep(0.10)
 
