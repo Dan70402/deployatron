@@ -51,15 +51,19 @@ class LED():
                     if self._oncount == self.delay:
                         self._oncount = 0
                         self._countstate = 'off'
+                    self.color_obj.setColor(self.color)
                 elif self._countstate == 'off':
                     self._offcount = self._offcount + 1
                     if self._offcount == self.delay:
                         self._offcount = 0
                         self._countstate = 'on'
+                    self.color_obj.setColor('BLACK')
                     return
+            else:
+                self.color_obj.setColor(self.color)
 
-            self.color_obj.setColor(self.color)
             GPIO.output(self.pin, True)
+
         else: pass
     #For calling from thread
     def _deactivate(self):
@@ -143,19 +147,20 @@ def main():
 
     while True:
         if sw_one.isActivated():
-            led_one.color = Color.GREEN
+            led_one.color = Color.BLUE
             led_one.blink = True
-            led_one.delay = 75
+            led_one.delay = 50
 
-            led_two.color = Color.BLACK
+            led_two.deactivate()
             time.sleep(0.10)
         else:
-            led_one.color = Color.YELLOW
+            led_one.color = Color.RED
             led_one.blink = False
 
-            led_two.color = Color.BLUE
+            led_two.color = Color.RED
             led_two.blink = True
-            led_two.delay = 75
+            led_two.delay = 50
+            led_two.activate()
 
             time.sleep(0.10)
 
