@@ -88,13 +88,14 @@ class Button():
 class Color():
     def __init__(self, red_pin, green_pin, blue_pin):
         self.color_pins = [red_pin, green_pin, blue_pin]
+        self.lock = threading.Lock()
         for color_pin in self.color_pins:
             GPIO.setup(color_pin, GPIO.OUT)
             GPIO.output(color_pin, GPIO.LOW)
 
     def setColor(self, color):
         for i in xrange(len(self.color_pins)):
-            GPIO.output(self.color_pins[i], self.colors[color][i])
+                GPIO.output(self.color_pins[i], self.colors[color][i])
 
     #RGB
     colors = {
@@ -142,16 +143,20 @@ def main():
 
     while True:
         if sw_one.isActivated():
-            led_one.color = Color.BLUE
+            led_one.color = Color.GREEN
             led_one.blink = True
             led_one.delay = 75
 
-            led_two.color = Color.GREEN
+            led_two.color = Color.BLACK
             time.sleep(0.10)
         else:
-            led_one.color = Color.RED
+            led_one.color = Color.YELLOW
             led_one.blink = False
+
             led_two.color = Color.BLUE
+            led_two.blink = True
+            led_two.delay = 75
+
             time.sleep(0.10)
 
 def threadLEDs(led_array, time_on):
