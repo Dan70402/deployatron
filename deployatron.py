@@ -1,4 +1,4 @@
-__author__ = 'dan'
+#__author__ = 'dan'
 import RPi.GPIO as GPIO
 import time
 import threading
@@ -45,7 +45,7 @@ class LED():
     def _activate(self):
         if self.isactivated == True:
 
-            if self.blink:
+            if self.blink == True:
                 if self._countstate == 'on':
                     self._oncount = self._oncount + 1
                     if self._oncount == self.delay:
@@ -146,23 +146,25 @@ def main():
 
 
     while True:
-        if sw_one.isActivated():
-            led_one.color = Color.BLUE
+        if not sw_one.isActivated():
+            led_one.color = Color.GREEN
             led_one.blink = True
-            led_one.delay = 50
+            led_one.delay = 25
 
             led_two.deactivate()
-            time.sleep(0.10)
+            time.sleep(0.05)
         else:
             led_one.color = Color.RED
-            led_one.blink = False
+	    led_one.blink = False
+
 
             led_two.color = Color.RED
             led_two.blink = True
-            led_two.delay = 50
+            led_two.delay = 5
+
             led_two.activate()
 
-            time.sleep(0.10)
+            time.sleep(0.05)
 
 def threadLEDs(led_array, time_on):
     while True:
